@@ -9,6 +9,8 @@ frames = []
 def udpStream(CHUNK):
 
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
     udp.bind(("", 12345))
     while True:
         soundData, addr = udp.recvfrom(CHUNK * CHANNELS * 2)
@@ -27,7 +29,7 @@ def play(stream, CHUNK):
 
 if __name__ == "__main__":
     FORMAT = pyaudio.paInt16
-    CHUNK = 1024
+    CHUNK = 256
     CHANNELS = 1
     RATE = 44100
 

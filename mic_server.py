@@ -9,7 +9,7 @@ frames = []
 
 def udpStream():
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
+    udp.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     while True:
         if len(frames) > 0:
             udp.sendto(frames.pop(0), ("<broadcast>", 12345))
@@ -22,7 +22,7 @@ def record(stream, CHUNK):
         frames.append(stream.read(CHUNK))
 
 
-CHUNK = 1024
+CHUNK = 256
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
