@@ -24,7 +24,7 @@ def record(stream, CHUNK):
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
-CHANNELS = 4
+CHANNELS = 1
 RATE = 44100
 
 p = pyaudio.PyAudio()

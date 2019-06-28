@@ -28,7 +28,7 @@ def play(stream, CHUNK):
 if __name__ == "__main__":
     FORMAT = pyaudio.paInt16
     CHUNK = 1024
-    CHANNELS = 4
+    CHANNELS = 1
     RATE = 44100
 
     p = pyaudio.PyAudio()
