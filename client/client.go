@@ -17,7 +17,13 @@ type Settings struct {
 	Channels   int
 }
 
+type Frame struct {
+	Buffer []float32
+}
+
 const HOST = "http://localhost:5656"
+
+var frame Frame
 
 func main() {
 	resp, err := http.Get(HOST + "/settings")
@@ -27,27 +33,21 @@ func main() {
 	json.Unmarshal(body, &settings)
 	portaudio.Initialize()
 	defer portaudio.Terminate()
-	buffer := make([]float32, settings.Buffer)
-
-	stream, err := portaudio.OpenDefaultStream(0, 1, settings.SampleRate, len(buffer), func(out []float32) {
-		buffers := make([][]float32, settings.Channels)
-		for i := 0; i < settings.Channels; i++ {
-			buffers[i] = make([]float32, settings.Buffer)
-			resp, err := http.Get(fmt.Sprintf("%s/audio_channel%d", HOST, i))
-			chk(err)
-
-			body, _ := ioutil.ReadAll(resp.Body)
-			responseReader := bytes.NewReader(body)
-			binary.Read(responseReader, binary.BigEndian, &buffers[i])
-		}
-		for i := range out {
-			out[i] = mix(buffers[0][i], buffers[1][i])
-		}
+	var buffers [][]float32
+	stream, err := portaudio.OpenDefaultStream(0, 1, settings.SampleRate, settings.Buffer, func(out []float32) {
+		buffer := make([]float32, settings.Buffer)
+		resp, err := http.Get(fmt.Sprintf("%s/audio_channel", HOST))
+		chk(err)
+		body, _ := ioutil.ReadAll(resp.Body)
+		responseReader := bytes.NewReader(body)
+		binary.Read(responseReader, binary.LittleEndian, &buffer)
+		copy(out, buffer)
+		buffers = append(buffers, out)
 	})
 
 	chk(err)
 	chk(stream.Start())
-	time.Sleep(time.Second * 40)
+	time.Sleep(time.Second * 400)
 	chk(stream.Stop())
 	defer stream.Close()
 
@@ -58,12 +58,7 @@ func main() {
 }
 
 func mix(a float32, b float32) float32 {
-	if a < 0 && b < 0 {
-		return (a + b) - ((a * b) / -32767)
-	} else if a > 0 && b > 0 {
-		return (a + b) - ((a * b) / -32767)
-	}
-	return a + b
+	return ((a + b) - (a * b)) * 2
 }
 
 func chk(err error) {
