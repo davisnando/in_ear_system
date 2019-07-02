@@ -36,7 +36,7 @@ func main() {
 	var buffers [][]float32
 	stream, err := portaudio.OpenDefaultStream(0, 1, settings.SampleRate, settings.Buffer, func(out []float32) {
 		buffer := make([]float32, settings.Buffer)
-		resp, err := http.Get(fmt.Sprintf("%s/audio_channel", HOST))
+		resp, err := http.Get(fmt.Sprintf("%s/channel0", HOST))
 		chk(err)
 		body, _ := ioutil.ReadAll(resp.Body)
 		responseReader := bytes.NewReader(body)
@@ -55,10 +55,6 @@ func main() {
 		fmt.Println(err)
 	}
 
-}
-
-func mix(a float32, b float32) float32 {
-	return ((a + b) - (a * b)) * 2
 }
 
 func chk(err error) {
