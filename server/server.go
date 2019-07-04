@@ -68,6 +68,8 @@ func main() {
 		js, _ := json.Marshal(settings)
 		w.Write(js)
 	})
+	
+
 	http.HandleFunc(fmt.Sprintf("/SetVolume"), func(w http.ResponseWriter, r *http.Request) {
 		var returnData Message
 		w.Header().Set("Content-Type", "application/json")

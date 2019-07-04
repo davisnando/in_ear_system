@@ -2,9 +2,8 @@ package main
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/gordonklaus/portaudio"
-	"net/http"
+	"net"
 )
 
 type Buffer struct {
@@ -32,6 +31,8 @@ type Mix struct {
 	Channels []Channel
 	Out      Buffer
 	index    int
+	Ips      []string
+	udp      net.UDPConn
 }
 
 func (m *Mix) Init(settings Settings) {
@@ -44,19 +45,19 @@ func (m *Mix) Init(settings Settings) {
 		m.Channels[i].buffer.Temp = make([]float32, settings.Buffer)
 		m.Channels[i].volume = 1
 	}
-	m.HandleHTTP()
+	m.Ips = append(m.Ips, "localhost")
 }
+func (m *Mix) Send() {
+	for _, ip := range m.Ips {
+		go func(dstIP string) {
+			RemoteEP := net.UDPAddr{IP: net.ParseIP(dstIP), Port: 4444}
+			conn, err := net.DialUDP("udp", nil, &RemoteEP)
+			chk(err)
+			binary.Write(conn, binary.LittleEndian, &m.Out.Mono)
+			conn.Close()
+		}(ip)
+	}
 
-func (m *Mix) HandleHTTP() {
-	http.HandleFunc(fmt.Sprintf("/channel%d", m.index), func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Connection", "Keep-Alive")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Transfer-Encoding", "chunked")
-		w.Header().Set("Content-Type", "audio/wave")
-		binary.Write(w, binary.LittleEndian, &m.Out.Mono)
-		return
-	})
 }
 
 func (m *Mix) Mix() {
@@ -75,6 +76,7 @@ func (m *Mix) Mix() {
 		m.Out.Temp[i] = mixLogarithmicRangeCompression(buffer * m.Out.Volume)
 	}
 	copy(m.Out.Mono, m.Out.Temp)
+	m.Send()
 }
 
 func (m *Master) CreateChannel() int {
