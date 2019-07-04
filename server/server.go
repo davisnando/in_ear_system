@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gordonklaus/portaudio"
+	"net"
 	"net/http"
 	"strconv"
 )
@@ -43,6 +44,7 @@ func main() {
 	http.HandleFunc("/settings", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		js, _ := json.Marshal(settings)
+
 		w.Write(js)
 	})
 
@@ -64,11 +66,13 @@ func main() {
 		var data returnData
 		data.index = index
 		data.amountOfChannels = len(MasterMix.MasterBuffer)
+		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+		MasterMix.Mixes[index].Ips = append(MasterMix.Mixes[index].Ips, ip)
 		w.Header().Set("Content-Type", "application/json")
+		fmt.Println(ip)
 		js, _ := json.Marshal(settings)
 		w.Write(js)
 	})
-	
 
 	http.HandleFunc(fmt.Sprintf("/SetVolume"), func(w http.ResponseWriter, r *http.Request) {
 		var returnData Message

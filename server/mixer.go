@@ -32,7 +32,6 @@ type Mix struct {
 	Out      Buffer
 	index    int
 	Ips      []string
-	udp      net.UDPConn
 }
 
 func (m *Mix) Init(settings Settings) {
@@ -45,7 +44,6 @@ func (m *Mix) Init(settings Settings) {
 		m.Channels[i].buffer.Temp = make([]float32, settings.Buffer)
 		m.Channels[i].volume = 1
 	}
-	m.Ips = append(m.Ips, "localhost")
 }
 func (m *Mix) Send() {
 	for _, ip := range m.Ips {

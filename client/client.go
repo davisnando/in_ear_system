@@ -33,13 +33,16 @@ func listen() {
 	})
 	defer pc.Close()
 	for {
-		buf := make([]byte, 512*4)
+		buf := make([]byte, 512*5)
 		_, _, err := pc.ReadFromUDP(buf)
 		if err != nil {
 			continue
 		}
-		responseReader := bytes.NewReader(buf)
-		binary.Read(responseReader, binary.LittleEndian, &frame.Buffer)
+		go func(buf []byte) {
+			responseReader := bytes.NewReader(buf)
+			binary.Read(responseReader, binary.LittleEndian, &frame.Buffer)
+		}(buf)
+
 	}
 }
 
@@ -49,6 +52,17 @@ func main() {
 	body, _ := ioutil.ReadAll(resp.Body)
 	var settings Settings
 	json.Unmarshal(body, &settings)
+
+	resp, err = http.Get(HOST + "/CreateChannel")
+	chk(err)
+	body, _ = ioutil.ReadAll(resp.Body)
+	type returnData struct {
+		index            int
+		amountOfChannels int
+	}
+	var data returnData
+	json.Unmarshal(body, &data)
+
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 	frame.Buffer = make([]float32, settings.Buffer)
@@ -56,12 +70,6 @@ func main() {
 
 	var buffers [][]float32
 	stream, err := portaudio.OpenDefaultStream(0, 1, settings.SampleRate, settings.Buffer, func(out []float32) {
-		// buffer := make([]float32, settings.Buffer)
-		// resp, err := http.Get(fmt.Sprintf("%s/channel0", HOST))
-		// chk(err)
-		// body, _ := ioutil.ReadAll(resp.Body)
-		// responseReader := bytes.NewReader(body)
-		// binary.Read(responseReader, binary.LittleEndian, &buffer)
 		copy(out, frame.Buffer)
 		buffers = append(buffers, out)
 	})
