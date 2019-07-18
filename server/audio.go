@@ -1,22 +1,12 @@
 package main
 
-import (
-	"math"
-)
-
-func audioMix(a float32, b float32) float32 {
-	return a + b
-}
-
-func mixLogarithmicRangeCompression(i float32) float32 {
-	if i < -1 {
-		return float32(-math.Log(-float64(i)-0.85)/14 - 0.75)
-	} else if i > 1 {
-		return float32(math.Log(float64(i)-0.85)/14 + 0.75)
-	} else {
-		if i*2 > 1 || i*2 < -2 {
-			return i
+func audioMix(a int16, b int16) int16 {
+	if a+b > 32767 || a+b < -32768 {
+		if a > b {
+			return a
+		} else {
+			return b
 		}
-		return i * 2
 	}
+	return a + b
 }

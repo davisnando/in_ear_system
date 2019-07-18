@@ -19,10 +19,10 @@ type Settings struct {
 }
 
 type Frame struct {
-	Buffer []float32
+	Buffer []int16
 }
 
-const HOST = "http://localhost:5656"
+const HOST = "http://192.168.178.18:5656"
 
 var frame Frame
 
@@ -65,11 +65,11 @@ func main() {
 
 	portaudio.Initialize()
 	defer portaudio.Terminate()
-	frame.Buffer = make([]float32, settings.Buffer)
+	frame.Buffer = make([]int16, settings.Buffer)
 	go listen()
 
-	var buffers [][]float32
-	stream, err := portaudio.OpenDefaultStream(0, 1, settings.SampleRate, settings.Buffer, func(out []float32) {
+	var buffers [][]int16
+	stream, err := portaudio.OpenDefaultStream(0, 1, settings.SampleRate, settings.Buffer, func(out []int16) {
 		copy(out, frame.Buffer)
 		buffers = append(buffers, out)
 	})
