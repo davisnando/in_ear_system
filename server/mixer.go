@@ -113,8 +113,9 @@ func (m *Master) handleBuffers() {
 		for i := range m.Mixes {
 			for b, buffer := range m.MasterBuffer {
 				copy(m.Mixes[i].Channels[b].buffer.Mono, buffer.Mono)
-				m.Mixes[i].Mix()
+				
 			}
+                        m.Mixes[i].Mix()
 		}
 		m.Mix()
 	})
