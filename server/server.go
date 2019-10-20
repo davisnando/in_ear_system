@@ -39,8 +39,6 @@ func main() {
 	MasterMix.Setting = settings
 	MasterMix.Init()
 	MasterMix.handleBuffers()
-	index := MasterMix.CreateChannel()
-	fmt.Println(fmt.Sprintf("Index = %d", index))
 	http.HandleFunc("/settings", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		js, _ := json.Marshal(settings)
@@ -138,6 +136,6 @@ func message(w http.ResponseWriter, message string, failed bool) {
 
 func chk(err error) {
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }
