@@ -24,7 +24,7 @@ type Master struct {
 
 type Channel struct {
 	buffer Buffer
-	volume int16
+	volume float32
 }
 
 type Mix struct {
@@ -47,10 +47,14 @@ func (m *Mix) Init(settings Settings) {
 }
 func (m *Mix) Send() {
 	for _, ip := range m.Ips {
+
 		go func(dstIP string) {
 			RemoteEP := net.UDPAddr{IP: net.ParseIP(dstIP), Port: 4444}
 			conn, err := net.DialUDP("udp", nil, &RemoteEP)
 			chk(err)
+			if err != nil {
+				return
+			}
 			binary.Write(conn, binary.LittleEndian, &m.Out.Mono)
 			conn.Close()
 		}(ip)
@@ -63,9 +67,9 @@ func (m *Mix) Mix() {
 	for _, channel := range m.Channels {
 		for i := range channel.buffer.Mono {
 			if m.Out.Temp[i] == 0 {
-				m.Out.Temp[i] = channel.volume * channel.buffer.Mono[i]
+				m.Out.Temp[i] = int16(channel.volume * float32(channel.buffer.Mono[i]))
 			} else {
-				m.Out.Temp[i] = audioMix(channel.volume*channel.buffer.Mono[i], m.Out.Temp[i])
+				m.Out.Temp[i] = audioMix(int16(channel.volume*float32(channel.buffer.Mono[i])), m.Out.Temp[i])
 			}
 		}
 	}
@@ -109,7 +113,6 @@ func (m *Master) handleBuffers() {
 				m.MasterBuffer[b].Mono[i] = in[i*m.Setting.Channels+m.MasterBuffer[b].Index]
 			}
 		}
-
 		for i := range m.Mixes {
 			for b, buffer := range m.MasterBuffer {
 				copy(m.Mixes[i].Channels[b].buffer.Mono, buffer.Mono)
