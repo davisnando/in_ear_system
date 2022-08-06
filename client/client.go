@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/gordonklaus/portaudio"
+	"github.com/davisnando/in_ear_system/portaudio"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -22,7 +22,7 @@ type Frame struct {
 	Buffer []int16
 }
 
-const HOST = "http://192.168.178.18:5656"
+const HOST = "http://192.168.1.120:5656"
 
 var frame Frame
 

@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/gordonklaus/portaudio"
+	"github.com/davisnando/in_ear_system/portaudio"
 	"net"
 	"net/http"
 	"strconv"
@@ -24,7 +24,9 @@ type Message struct {
 }
 
 func main() {
+	fmt.Println("STARTING SERVER....")
 	var MasterMix Master
+	fmt.Println("Initializing audio")
 	MasterMix.InitializePortaudio()
 	defer portaudio.Terminate()
 
@@ -37,6 +39,7 @@ func main() {
 
 	settings.Buffer = 512
 	MasterMix.Setting = settings
+	fmt.Println("Setting up http server")
 	MasterMix.Init()
 	MasterMix.handleBuffers()
 	http.HandleFunc("/settings", func(w http.ResponseWriter, r *http.Request) {
@@ -123,6 +126,7 @@ func main() {
 		js, _ := json.Marshal(returnData)
 		w.Write(js)
 	})
+	fmt.Println("Serving on 0.0.0.0:5656")
 	http.ListenAndServe("0.0.0.0:5656", nil)
 }
 

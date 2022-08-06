@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/binary"
-	"github.com/gordonklaus/portaudio"
+	"github.com/davisnando/in_ear_system/portaudio"
 	"net"
 )
 
